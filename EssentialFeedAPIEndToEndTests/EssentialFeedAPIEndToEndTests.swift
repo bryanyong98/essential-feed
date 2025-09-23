@@ -8,9 +8,6 @@
 import XCTest
 import EssentialFeed
 
-// this test runs slower
-// run this before merging branch back to the trunk
-// automate this test as part of the ci pipeline.
 final class EssentialFeedAPIEndToEndTests: XCTestCase {
 
     func test_endToEndServerGETFeedResult_matchesFixedTestAccountData() {
