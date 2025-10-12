@@ -36,15 +36,8 @@ class CodableFeedStore {
         }
     }
 
-//    private let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
-    private let storeURL: URL
-
-    init(storeURL: URL) {
-        self.storeURL = storeURL
-    }
-
     func retrieve(completion: @escaping FeedStore.RetrievalCompletion) {
-        guard let data = try? Data(contentsOf: storeURL) else {
+        guard let data = try? Data(contentsOf: storeURL()) else {
             return completion(.empty)
         }
         let decoder = JSONDecoder()
@@ -55,7 +48,7 @@ class CodableFeedStore {
     func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping FeedStore.InsertionCompletion) {
         let encoder = JSONEncoder()
         let encoded = try! encoder.encode(Cache(feed: feed.map(CodableFeedImage.init), timestamp: timestamp))
-        try! encoded.write(to: storeURL)
+        try! encoded.write(to: storeURL())
         completion(nil)
     }
 }
@@ -65,15 +58,13 @@ class CodableFeedStoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
-        try? FileManager.default.removeItem(at: storeURL)
+        setupEmptyStoreState()
     }
 
     override func tearDown() {
         super.tearDown()
 
-        let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
-        try? FileManager.default.removeItem(at: storeURL)
+        undoStoreSideEffects()
     }
 
     func test_retrieve_deliversEmptyOnEmptyCache() {
@@ -138,9 +129,28 @@ class CodableFeedStoreTests: XCTestCase {
     // MARK: - Helper
     
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> CodableFeedStore {
-        let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
-        let sut = CodableFeedStore(storeURL: storeURL)
+        let sut = CodableFeedStore()
         trackForMemoryLeaks(sut, file: file, line: line)
         return sut
     }
+
+    private func setupEmptyStoreState() {
+        deleteStoreArtifacts()
+    }
+
+    private func undoStoreSideEffects() {
+        deleteStoreArtifacts()
+    }
+
+    private func deleteStoreArtifacts() {
+        try? FileManager.default.removeItem(at: testSpecificStoreURL())
+    }
+
+    private func testSpecificStoreURL() -> URL {
+        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
+    }
+}
+
+private func storeURL() -> URL {
+    return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("image-feed.store")
 }
