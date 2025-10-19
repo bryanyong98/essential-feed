@@ -8,7 +8,7 @@
 import XCTest
 import EssentialFeed
 
-typealias FailableFeedStore = FailableRetreieveFeedStoreSpecs & FailableInsertFeedStoreSpecs & FailableDeleteFeedStoreSpecs
+typealias FailableFeedStore = FailableInsertFeedStoreSpecs & FailableDeleteFeedStoreSpecs
 
 class CodableFeedStoreTests: XCTestCase, FailableFeedStore {
 
