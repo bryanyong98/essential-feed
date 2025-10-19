@@ -23,6 +23,11 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
+		<key>EssentialFeedCacheIntegrationTests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
 		<key>maloc.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
@@ -31,6 +36,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>4E5477E02EA5221F0059AD78</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>4EF055262E7ABB34002BD50D</key>
 		<dict>
 			<key>primary</key>
