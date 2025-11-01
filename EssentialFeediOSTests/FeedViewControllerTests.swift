@@ -201,6 +201,42 @@ final class FeedViewControllerTests: XCTestCase {
         XCTAssertTrue(view0?.renderedImage?.count ?? 0 > 0, "Expected image for first view while loading image")
         XCTAssertTrue(view1?.renderedImage?.count ?? 0 > 0, "Expected image for second view while loading image")
     }
+
+    func test_feedImageViewRetryButton_isVisibleOnImageURLLoadError() {
+        let (sut, loader) = makeSUT()
+    
+        sut.loadViewIfNeeded()
+        loader.completeFeedLoading(with: [makeImage(), makeImage()])
+    
+        let view0 = sut.simulateFeedImageViewVisible(at: 0)
+        let view1 = sut.simulateFeedImageViewVisible(at: 1)
+        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for first view while loading image")
+        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for second view while loading image")
+    
+        let imageData0 = UIImage.make(withColor: .red).pngData()!
+        loader.completeImageLoading(with: imageData0, at: 0)
+        XCTAssertTrue(view0?.renderedImage?.count ?? 0 > 0, "Expected image for first view while loading image")
+        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for second view while loading image")
+    
+        let imageData1 = UIImage.make(withColor: .blue).pngData()!
+        loader.completeImageLoading(with: imageData1, at: 1)
+        XCTAssertTrue(view0?.renderedImage?.count ?? 0 > 0, "Expected image for first view while loading image")
+        XCTAssertTrue(view1?.renderedImage?.count ?? 0 > 0, "Expected image for second view while loading image")
+    }
+
+    func test_feedImageViewRetryButton_isVisibleOnInvalidImageData() {
+        let (sut, loader) = makeSUT()
+        
+        sut.loadViewIfNeeded()
+        loader.completeFeedLoading(with: [makeImage()])
+        
+        let view = sut.simulateFeedImageViewVisible(at: 0)
+        XCTAssertEqual(view?.isShowingRetryAction, false, "Expected no retry action while loading image")
+
+        let invalidImageData = Data("invalid image data".utf8)
+        loader.completeImageLoading(with: invalidImageData, at: 0)
+        XCTAssertEqual(view?.isShowingRetryAction, true, "Expected retry action once image loading completes")
+    }
 }
 
 private extension FeedViewController {
@@ -245,16 +281,20 @@ private extension FeedImageCell {
         return !locationContainer.isHidden
     }
 
+    var isShowingImageLoadingIndicator: Bool {
+        return feedImageContainer.isShimmering
+    }
+
+    var isShowingRetryAction: Bool {
+        return !feedImageRetryButton.isHidden
+    }
+
     var locationText: String? {
         return locationLabel.text
     }
 
     var descriptionText: String? {
         return descriptionLabel.text
-    }
-
-    var isShowingImageLoadingIndicator: Bool {
-        return feedImageContainer.isShimmering
     }
 
     var renderedImage: Data? {
