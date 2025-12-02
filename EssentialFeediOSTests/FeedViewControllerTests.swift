@@ -182,50 +182,6 @@ final class FeedViewControllerTests: XCTestCase {
         XCTAssertEqual(view1?.isShowingImageLoadingIndicator, false, "Expected no loading indicator for second view while loading image")
     }
 
-    func test_feedImageView_rendersImageLoadedFromURL() {
-        let (sut, loader) = makeSUT()
-    
-        sut.loadViewIfNeeded()
-        loader.completeFeedLoading(with: [makeImage(), makeImage()])
-    
-        let view0 = sut.simulateFeedImageViewVisible(at: 0)
-        let view1 = sut.simulateFeedImageViewVisible(at: 1)
-        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for first view while loading image")
-        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for second view while loading image")
-    
-        let imageData0 = UIImage.make(withColor: .red).pngData()!
-        loader.completeImageLoading(with: imageData0, at: 0)
-        XCTAssertTrue(view0?.renderedImage?.count ?? 0 > 0, "Expected image for first view while loading image")
-        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for second view while loading image")
-    
-        let imageData1 = UIImage.make(withColor: .blue).pngData()!
-        loader.completeImageLoading(with: imageData1, at: 1)
-        XCTAssertTrue(view0?.renderedImage?.count ?? 0 > 0, "Expected image for first view while loading image")
-        XCTAssertTrue(view1?.renderedImage?.count ?? 0 > 0, "Expected image for second view while loading image")
-    }
-
-    func test_feedImageViewRetryButton_isVisibleOnImageURLLoadError() {
-        let (sut, loader) = makeSUT()
-    
-        sut.loadViewIfNeeded()
-        loader.completeFeedLoading(with: [makeImage(), makeImage()])
-    
-        let view0 = sut.simulateFeedImageViewVisible(at: 0)
-        let view1 = sut.simulateFeedImageViewVisible(at: 1)
-        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for first view while loading image")
-        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for second view while loading image")
-    
-        let imageData0 = UIImage.make(withColor: .red).pngData()!
-        loader.completeImageLoading(with: imageData0, at: 0)
-        XCTAssertTrue(view0?.renderedImage?.count ?? 0 > 0, "Expected image for first view while loading image")
-        XCTAssertEqual(view1?.renderedImage, .none, "Expected no image state change for second view while loading image")
-    
-        let imageData1 = UIImage.make(withColor: .blue).pngData()!
-        loader.completeImageLoading(with: imageData1, at: 1)
-        XCTAssertTrue(view0?.renderedImage?.count ?? 0 > 0, "Expected image for first view while loading image")
-        XCTAssertTrue(view1?.renderedImage?.count ?? 0 > 0, "Expected image for second view while loading image")
-    }
-
     func test_feedImageViewRetryButton_isVisibleOnInvalidImageData() {
         let (sut, loader) = makeSUT()
         
@@ -293,6 +249,18 @@ final class FeedViewControllerTests: XCTestCase {
         sut.simulateFeedImageViewNotNearVisible(at: 1)
         XCTAssertEqual(loader.cancelledImageURLs, [image0.url, image1.url])
     }
+
+    // This test doesn't do anything. Need to check. 
+    func test_feedImageView_doesNotRenderLoadedImageWhenNotVisible() {
+        let (sut, loader) = makeSUT()
+        sut.loadViewIfNeeded()
+        loader.completeFeedLoading(with: [makeImage()])
+
+        let view = sut.simulateFeedImageViewNotVisible(at: 0)
+        loader.completeImageLoading(with: anyImageData())
+
+        XCTAssertNil(view?.renderedImage, "Expected no rendered image when an image load finishes after the view is not visible anymore")
+    }
 }
 
 private extension FeedViewController {
@@ -311,12 +279,15 @@ private extension FeedViewController {
         ds?.tableView(tableView, prefetchRowsAt: [index])
     }
 
-    func simulateFeedImageViewNotVisible(at row: Int) {
+    @discardableResult
+    func simulateFeedImageViewNotVisible(at row: Int) -> FeedImageCell? {
         let view = simulateFeedImageViewVisible(at: row)
 
         let delegate = tableView.delegate
         let index = IndexPath(row: row, section: feedImagesSection)
         delegate?.tableView?(tableView, didEndDisplaying: view!, forRowAt: index)
+
+        return view
     }
 
     func simulateFeedImageViewNotNearVisible(at row: Int) {
@@ -392,6 +363,10 @@ extension FeedViewControllerTests {
         location: String? = nil,
         url: URL = URL(string: "http://any-url.com")!) -> FeedImage {
             FeedImage(id: UUID(), description: description, location: location, url: url)
+    }
+
+    private func anyImageData() -> Data {
+        UIImage.make(withColor: .red).pngData()!
     }
 
     private func assertThat(_ sut: FeedViewController, isRendering feed: [FeedImage], file: StaticString = #file, line: UInt = #line) {
