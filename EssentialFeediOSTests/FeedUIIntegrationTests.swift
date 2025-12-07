@@ -10,7 +10,7 @@ import EssentialFeediOS
 import UIKit
 import XCTest
 
-final class FeedViewControllerTests: XCTestCase {
+final class FeedUIIntegrationTests: XCTestCase {
 
     class LoaderSpy: FeedLoader, FeedImageDataLoader {
 
@@ -355,7 +355,7 @@ private extension FeedImageCell {
     }
 }
 
-extension FeedViewControllerTests {
+extension FeedUIIntegrationTests {
 
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: FeedViewController, loader: LoaderSpy) {
         let loader = LoaderSpy()
