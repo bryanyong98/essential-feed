@@ -25,6 +25,8 @@ protocol FeedView {
     func display(_ viewModel: FeedViewModel)
 }
 
+// FeedPresenter is a platform agnostic component. 
+
 final class FeedPresenter: NSObject {
     typealias Observer<T> = (T) -> Void
 
